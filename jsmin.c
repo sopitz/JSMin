@@ -297,10 +297,55 @@ jsmin()
 extern int
 main(int argc, char* argv[])
 {
-    int i;
-    for (i = 1; i < argc; i += 1) {
-        fprintf(stdout, "// %s\n", argv[i]);
+    if (argc <= 1) {
+        printf("================ JSmin ================\n");
+        printf("use the programm as following:\n");
+        printf("%s <[path_input_file] \"[path_to_ouputfile]\" \"[header]\"\n", argv[0]);
+        printf("If [path_to_ouputfile] is not specified the old file will be overriden!\n");
+        return 0;
+    } else {
+        if (argc == 2) {
+//            printf("I just got \"%s\" as argument. Is it:\n", argv[1]);
+            printf("gotta implement that the stdin is gonna be the same as stdout later.");
+            // make stdin a string or whatever to be used later
+            printf("");
+        } else {
+            // make argv[2] a string or whatever to be used later
+            int    fd;
+            fpos_t pos;
+        
+            printf("==> start minifying your JS\n");
+        
+            fflush(stdout);
+            fgetpos(stdout, &pos);
+            fd = dup(fileno(stdout));
+            freopen("/tmp/stdout", "w", stdout);
+            jsmin();
+        
+            fflush(stdout);
+            dup2(fd, fileno(stdout));
+            close(fd);
+            clearerr(stdout);
+            fsetpos(stdout, &pos);        /* for C9X */
+            printf("==> done minifying your JS\n");
+            printf("==> creating %s\n", argv[1]);
+        
+            FILE *newJS;
+            newJS = fopen(argv[1], "w");
+        
+            FILE *fp;
+            fp = fopen ("/tmp/stdout", "r");
+        
+            char ch = 'y';
+            do {
+                ch = fgetc(fp);
+                fprintf(newJS, "%c", ch);
+            } while (ch != EOF);
+        
+            fclose(fp);
+            fclose(newJS);
+            printf("==> created %s\n", argv[1]);
+        }
+        return 0;
     }
-    jsmin();
-    return 0;
 }
